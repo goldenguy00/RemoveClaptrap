@@ -20,6 +20,7 @@ namespace RemoveClaptrap
             "clap-tp",
             "clapbot",
             "trapbot",
+            "clapchef"
         };
 
         public static int claptrapsFound = 0;
@@ -45,11 +46,36 @@ namespace RemoveClaptrap
             On.RoR2.SceneCatalog.SetSceneDefs += SceneCatalog_SetSceneDefs;
             On.RoR2.SurfaceDefCatalog.SetSurfaceDefs += SurfaceDefCatalog_SetSurfaceDefs;
             On.RoR2.UnlockableCatalog.SetUnlockableDefs += UnlockableCatalog_SetUnlockableDefs;
+            On.RoR2.SkinCatalog.FindSkinsForBody += SkinCatalog_FindSkinsForBody;
 
             RoR2Application.onLoad += () =>
             {
-                Debug.Log("Hunt completed. " + claptrapsFound + " Claptraps eliminated.");
+                if (claptrapsFound == 0)
+                    Debug.LogWarning("Hunt completed. No Claptraps found.");
+                else
+                    Debug.LogError($"Hunt completed. {claptrapsFound} Claptraps eliminated.");
             };
+        }
+
+        private SkinDef[] SkinCatalog_FindSkinsForBody(On.RoR2.SkinCatalog.orig_FindSkinsForBody orig, BodyIndex bodyIndex)
+        {
+            var newEntries = orig(bodyIndex);
+
+            int c = newEntries.Length;
+            for (int i = 0; i < c; i++)
+            {
+                foreach (string fucker in thingsThatMightBeClaptrap)
+                    if (newEntries[i].nameToken.ToLower().Contains(fucker))
+                    {
+                        Debug.LogError("CLAPTRAP IDENTIFIED. PURGING.");
+                        HG.ArrayUtils.ArrayRemoveAtAndResize(ref newEntries, i);
+                        HG.ArrayUtils.ArrayRemoveAtAndResize(ref BodyCatalog.bodyPrefabs[(int)bodyIndex].GetComponent<ModelLocator>().modelTransform.GetComponent<ModelSkinController>().skins, i);
+                        HG.ArrayUtils.ArrayRemoveAtAndResize(ref BodyCatalog.skins[(int)bodyIndex], i);
+                        claptrapsFound++;
+                    }
+
+            }
+            return newEntries;
         }
 
         private void UnlockableCatalog_SetUnlockableDefs(On.RoR2.UnlockableCatalog.orig_SetUnlockableDefs orig, UnlockableDef[] newEntries)
