@@ -1,12 +1,12 @@
 using BepInEx;
 using RoR2;
 using System;
+using System.Collections;
 using UnityEngine;
-using BepInEx.Configuration;
-using System.Collections.Generic;
+
 namespace RemoveClaptrap
 {    
-    [BepInPlugin("com.claptraphater.RemoveClaptrap", "REMOVE CLAPTRAP", "1.1.0")]
+    [BepInPlugin("com.claptraphater.RemoveClaptrap", "REMOVE CLAPTRAP", "1.2.0")]
     public class RemoveClaptrap : BaseUnityPlugin
 	{
         public static string[] thingsThatMightBeClaptrap = new string[]
@@ -83,7 +83,7 @@ namespace RemoveClaptrap
             }
             orig(newEntries);
         }
-        private void SceneCatalog_SetSceneDefs(On.RoR2.SceneCatalog.orig_SetSceneDefs orig, SceneDef[] newEntries)
+        private IEnumerator SceneCatalog_SetSceneDefs(On.RoR2.SceneCatalog.orig_SetSceneDefs orig, SceneDef[] newEntries)
         {
             int c = newEntries.Length;
             for (int i = 0; i < c; i++)
@@ -96,7 +96,7 @@ namespace RemoveClaptrap
                         claptrapsFound++;
                     }
             }
-            orig(newEntries);
+            yield return orig(newEntries);
         }
         private void ProjectileCatalog_SetProjectilePrefabs(On.RoR2.ProjectileCatalog.orig_SetProjectilePrefabs orig, GameObject[] newEntries)
         {
@@ -203,7 +203,7 @@ namespace RemoveClaptrap
             }
             orig(newEntries);
         }
-        private void EntityStateCatalog_SetElements(On.RoR2.EntityStateCatalog.orig_SetElements orig, Type[] newEntries1, EntityStateConfiguration[] newEntries2)
+        private IEnumerator EntityStateCatalog_SetElements(On.RoR2.EntityStateCatalog.orig_SetElements orig, Type[] newEntries1, EntityStateConfiguration[] newEntries2)
         {
             int c1 = newEntries2.Length;
             for (int i = 0; i < c1; i++)
@@ -228,7 +228,7 @@ namespace RemoveClaptrap
                         claptrapsFound++;
                     }
             }
-            orig(newEntries1, newEntries2);
+            yield return orig(newEntries1, newEntries2);
         }
         private void EliteCatalog_SetEliteDefs(On.RoR2.EliteCatalog.orig_SetEliteDefs orig, EliteDef[] newEntries)
         {
